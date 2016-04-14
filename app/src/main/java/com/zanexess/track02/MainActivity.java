@@ -8,7 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 
 public class MainActivity extends FragmentActivity {
     private ListFragment _listFragment;
-    private static final String TAG = "ScrollingActivity";
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -20,7 +20,6 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onStart() {
-        super.onStart();
         super.onStart();
         Fragment frag = getSupportFragmentManager().findFragmentById(R.id.main_fragment);
         if (frag == null) {

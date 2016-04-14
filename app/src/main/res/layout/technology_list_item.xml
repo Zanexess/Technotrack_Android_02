@@ -19,32 +19,38 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:foregroundGravity="center_vertical">
         <ImageView
             android:gravity="center|center_horizontal"
-            android:layout_gravity="center|center_horizontal"
-            android:id="@+id/dict_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/image"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:minHeight="64dp"
             android:maxHeight="64dp"
             android:minWidth="64dp"
-            android:maxWidth="64dp" />
+            android:maxWidth="64dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp" />
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp">
             <TextView
-                android:id="@+id/dict_word"
+                android:id="@+id/title_text"
                 android:text="test_word"
                 android:gravity="center_horizontal"
                 style="@android:style/TextAppearance.Medium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <TextView
-                android:id="@+id/dict_wordd"
+                android:id="@+id/info_text"
                 android:text="test_word"
-                android:gravity="center_horizontal"
                 style="@android:style/TextAppearance.Medium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>

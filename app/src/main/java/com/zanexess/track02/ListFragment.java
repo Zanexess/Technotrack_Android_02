@@ -60,7 +60,7 @@ public class ListFragment extends Fragment {
             w = h;
             h = tmp;
         }
-        return (int)(Math.min(h * 0.3f, w * 0.3f));
+        return (int)(Math.min(h * 0.3f, w * 0.3f) + 0.5f);
     }
 
     @Override
@@ -128,6 +128,7 @@ public class ListFragment extends Fragment {
 
     private static class ViewHolder extends RecyclerView.ViewHolder {
         TextView _tvw;
+        TextView _twi;
         ImageView _iv;
         View _card;
         int _pos;
@@ -160,10 +161,16 @@ public class ListFragment extends Fragment {
                 opt.inSampleSize = sc;
                 opt.inJustDecodeBounds = false;
                 Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(file), null, opt);
+
+//                FIX
+                if (bitmap == null) {
+                    return null;
+                }
+
                 Log.d("LOAD_IMAGE", " name = " + _name + " w = " + bitmap.getWidth() + " h = " + bitmap.getHeight());
                 return bitmap;
             } catch (IOException e) {
-                Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
+                //Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
             }
             return null;
         }
@@ -176,6 +183,8 @@ public class ListFragment extends Fragment {
                 File file;
                 if (context != null) {
                     file = new File(context.getCacheDir(), _name.replace("/", ""));
+//                    //FIX
+//                    if (file == null) return null;
                     bitmap = decodeFile(file);
                     if (null == bitmap ) {
                         URL url = new URL(_name);
@@ -188,7 +197,7 @@ public class ListFragment extends Fragment {
                     return bitmap;
                 }
             } catch (IOException e) {
-                Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
+                //Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
             }
             return null;
         }
@@ -292,8 +301,10 @@ public class ListFragment extends Fragment {
             View convertView = inflater.inflate(R.layout.technology_list_item, parent, false);
             ViewHolder holder = new ViewHolder(convertView);
             assert convertView != null;
-            holder._tvw = (TextView)convertView.findViewById(R.id.dict_word);
-            holder._iv = (ImageView)convertView.findViewById(R.id.dict_image);
+            holder._tvw = (TextView)convertView.findViewById(R.id.title_text);
+            holder._twi = (TextView)convertView.findViewById(R.id.info_text);
+            holder._iv = (ImageView)convertView.findViewById(R.id.image);
+
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(_imageSize, _imageSize);
             holder._iv.setLayoutParams(lp);
 
@@ -302,11 +313,12 @@ public class ListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-//            TechnologyData.Technology word = list.get(position);
-            TechnologyData.Technology word = TechnologyData.instance().getImage(position);
-            if (word == null) return;
+//            TechnologyData.Technology technology = list.get(position);
+            TechnologyData.Technology technology = TechnologyData.instance().getImage(position);
+            if (technology == null) return;
             holder._pos = position;
-            holder._tvw.setText(word.getTitle());
+            holder._tvw.setText(technology.getTitle());
+            holder._twi.setText(technology.getInfo());
             final int i = position;
             holder._card.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -314,7 +326,7 @@ public class ListFragment extends Fragment {
                     //((ScrollingActivity)getActivity()).doSomething(i);
                 }
             });
-            ListFragment.this.loadBitmap(getActivity(), DOMEN + word.getUrl_picture(), holder._iv);
+            ListFragment.this.loadBitmap(getActivity(), DOMEN + technology.getUrl_picture(), holder._iv);
         }
 
         @Override
@@ -322,9 +334,6 @@ public class ListFragment extends Fragment {
             return _data.size();
         }
     }
-
-
-
 
     enum DownloadStatus {IDLE, PROCESSING, NOT_INITIALISED, FAILED_OR_EMPTY, OK}
 
@@ -366,7 +375,6 @@ public class ListFragment extends Fragment {
         public class DownloadRawData extends AsyncTask<String, Void, String> {
             protected void onPostExecute(String webData) {
                 mData = webData;
-                //Log.v(LOG_TAG, "Data returned was: " + mData);
                 if (mData == null) {
                     if (mRawUrl == null) {
                         mDownloadStatus = DownloadStatus.NOT_INITIALISED;
@@ -460,7 +468,6 @@ public class ListFragment extends Fragment {
                 Log.e(LOG_TAG, "Error downloading raw file");
                 return;
             }
-
             final String TECHNOLOGY = "technology";
             final String ID = "id";
             final String URL_PICTURE = "picture";
@@ -474,15 +481,11 @@ public class ListFragment extends Fragment {
                     String id = jsonObject.getString(ID);
                     String url = jsonObject.getString(URL_PICTURE);
                     String title = jsonObject.getString(TITLE);
-                    //TODO INFO
-//               String info = jsonObject.getString(INFO);
-
-                    TechnologyData.Technology technology = new TechnologyData.Technology(id, url, title, "");
+                    String info = jsonObject.optString(INFO);
+                    TechnologyData.Technology technology = new TechnologyData.Technology(id, url, title, info);
                     this.mObjects.add(technology);
-                    Log.v("afsd", "" + mObjects.size());
                 }
             } catch (JSONException json) {
-                Log.v(LOG_TAG, getMData());
                 json.printStackTrace();
                 Log.e(LOG_TAG, "Error processing Json data");
             }
@@ -521,7 +524,6 @@ public class ListFragment extends Fragment {
                 super.onPostExecute(webData);
                 list = getMObjects();
                 TechnologyData.createInstance(list);
-                Log.v("dsaafds", list.size()+"");
                 MyAdapter wa = new MyAdapter(
                         getActivity(),
                         R.layout.technology_list_item,
