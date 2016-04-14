@@ -48,7 +48,7 @@ public class ListFragment extends Fragment {
     private static int _imageSize;
     private LruCache<String, Bitmap> _memoryCache;
     Activity activity;
-    List<TechnologyData.Image> list;
+    List<TechnologyData.Technology> list;
     final static String URL = "http://mobevo.ext.terrhq.ru/shr/j/ru/technology.js";
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
 
@@ -277,10 +277,10 @@ public class ListFragment extends Fragment {
 
         Context _context;
         int _resource;
-        List<TechnologyData.Image> _data;
+        List<TechnologyData.Technology> _data;
 
 
-        public MyAdapter(Context context, int resource, List<TechnologyData.Image> objects) {
+        public MyAdapter(Context context, int resource, List<TechnologyData.Technology> objects) {
             _context = context;
             _data = objects;
             _resource = resource;
@@ -302,7 +302,8 @@ public class ListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            TechnologyData.Image word = list.get(position);
+//            TechnologyData.Technology word = list.get(position);
+            TechnologyData.Technology word = TechnologyData.instance().getImage(position);
             if (word == null) return;
             holder._pos = position;
             holder._tvw.setText(word.getTitle());
@@ -429,7 +430,7 @@ public class ListFragment extends Fragment {
     public class GetJsonData extends GetRawData {
 
         private String LOG_TAG = GetJsonData.class.getSimpleName();
-        private List<TechnologyData.Image> mObjects;
+        private List<TechnologyData.Technology> mObjects;
         private Uri mDestinationUri;
 
         public GetJsonData() {
@@ -438,7 +439,7 @@ public class ListFragment extends Fragment {
             mObjects = new ArrayList<>();
         }
 
-        public List<TechnologyData.Image> getMObjects() {
+        public List<TechnologyData.Technology> getMObjects() {
             return mObjects;
         }
 
@@ -476,8 +477,8 @@ public class ListFragment extends Fragment {
                     //TODO INFO
 //               String info = jsonObject.getString(INFO);
 
-                    TechnologyData.Image image = new TechnologyData.Image(id, url, title, "");
-                    this.mObjects.add(image);
+                    TechnologyData.Technology technology = new TechnologyData.Technology(id, url, title, "");
+                    this.mObjects.add(technology);
                     Log.v("afsd", "" + mObjects.size());
                 }
             } catch (JSONException json) {
@@ -511,19 +512,24 @@ public class ListFragment extends Fragment {
         public void execute() {
             ProcessData processData = new ProcessData();
             processData.execute();
+
         }
 
         public class ProcessData extends GetJsonData.DownloadJsonData {
             @Override
             protected void onPostExecute(String webData) {
                 super.onPostExecute(webData);
+                list = getMObjects();
+                TechnologyData.createInstance(list);
+                Log.v("dsaafds", list.size()+"");
                 MyAdapter wa = new MyAdapter(
                         getActivity(),
                         R.layout.technology_list_item,
-                        getMObjects()
-//                        TechnologyData.instance().getImages()
+                        //getMObjects()
+                        TechnologyData.instance().getImages()
                 );
-                list = getMObjects();
+
+
                 RecyclerView mRecyclerView = (RecyclerView) activity.findViewById(R.id.recycler_view);
                 mRecyclerView.setHasFixedSize(true);
                 mRecyclerView.setAdapter(wa);
