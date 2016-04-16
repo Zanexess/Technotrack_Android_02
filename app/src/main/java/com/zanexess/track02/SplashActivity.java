@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 public class SplashActivity extends Activity {
@@ -12,6 +15,15 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT < 16) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            View decorView = getWindow().getDecorView();
+            // Hide the status bar.
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+        }
         setContentView(R.layout.splash_activity);
         if (chechConnection()) {
             //TODO Splash
