@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,21 +25,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -48,8 +40,6 @@ public class ListFragment extends Fragment {
     private static int _imageSize;
     private LruCache<String, Bitmap> _memoryCache;
     Activity activity;
-    List<TechnologyData.Technology> list;
-    final static String URL = "http://mobevo.ext.terrhq.ru/shr/j/ru/technology.js";
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
 
     private static int updateImageSize(DisplayMetrics dm) {
@@ -87,6 +77,14 @@ public class ListFragment extends Fragment {
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        MyAdapter wa = new MyAdapter(
+                getActivity(),
+                R.layout.technology_list_item,
+                //getMObjects()
+                TechnologyData.instance().getImages()
+        );
+        mRecyclerView.setAdapter(wa);
         return root;
     }
 
@@ -322,212 +320,6 @@ public class ListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return _data.size();
-        }
-    }
-
-    enum DownloadStatus {IDLE, PROCESSING, NOT_INITIALISED, FAILED_OR_EMPTY, OK}
-
-    public class GetRawData {
-        private String LOG_TAG = GetRawData.class.getSimpleName();
-        private String mRawUrl;
-        private String mData;
-        private DownloadStatus mDownloadStatus;
-
-        public GetRawData(String mRawUrl) {
-            this.mRawUrl = mRawUrl;
-            this.mDownloadStatus = DownloadStatus.IDLE;
-        }
-
-        public void reset() {
-            this.mDownloadStatus = DownloadStatus.IDLE;
-            this.mRawUrl = null;
-            this.mData = null;
-        }
-
-        public String getMData() {
-            return mData;
-        }
-
-        public void setMRawUrl(String mRawUrl) {
-            this.mRawUrl = mRawUrl;
-        }
-
-        public DownloadStatus getMDownloadStatus() {
-            return mDownloadStatus;
-        }
-
-        public void execute() {
-            this.mDownloadStatus = mDownloadStatus.PROCESSING;
-            DownloadRawData downloadRawData = new DownloadRawData();
-            downloadRawData.execute(mRawUrl);
-        }
-
-        public class DownloadRawData extends AsyncTask<String, Void, String> {
-            protected void onPostExecute(String webData) {
-                mData = webData;
-                if (mData == null) {
-                    if (mRawUrl == null) {
-                        mDownloadStatus = DownloadStatus.NOT_INITIALISED;
-                    } else {
-                        mDownloadStatus = DownloadStatus.FAILED_OR_EMPTY;
-                    }
-                } else {
-                    mDownloadStatus = DownloadStatus.OK;
-                }
-
-                getActivity().finish();
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                HttpURLConnection urlConnection = null;
-                BufferedReader reader = null;
-
-                if (params == null) {
-                    return null;
-                }
-
-                try {
-                    URL url = new URL(params[0]);
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.connect();
-
-                    InputStream inputStream = urlConnection.getInputStream();
-                    if (inputStream == null) {
-                        return null;
-                    }
-
-                    StringBuffer buffer = new StringBuffer();
-
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line + "\n");
-                    }
-
-                    return buffer.toString();
-
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error", e);
-                    return null;
-                } finally {
-                    if (urlConnection != null) {
-                        urlConnection.disconnect();
-                    }
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            Log.e(LOG_TAG, "Error closing stream", e);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public class GetJsonData extends GetRawData {
-
-        private String LOG_TAG = GetJsonData.class.getSimpleName();
-        private List<TechnologyData.Technology> mObjects;
-        private Uri mDestinationUri;
-
-        public GetJsonData() {
-            super(null);
-            createAndUpdateUri();
-            mObjects = new ArrayList<>();
-        }
-
-        public List<TechnologyData.Technology> getMObjects() {
-            return mObjects;
-        }
-
-        public void execute() {
-            super.setMRawUrl(mDestinationUri.toString());
-            DownloadJsonData downloadJsonData = new DownloadJsonData();
-            Log.v(LOG_TAG, "Build URI = " + mDestinationUri.toString());
-            downloadJsonData.execute(mDestinationUri.toString());
-        }
-
-        public boolean createAndUpdateUri() {
-            mDestinationUri = Uri.parse(URL).buildUpon().build();
-            return mDestinationUri != null;
-        }
-
-        public void processResult() {
-            if (getMDownloadStatus() != DownloadStatus.OK) {
-                Log.e(LOG_TAG, "Error downloading raw file");
-                return;
-            }
-            final String TECHNOLOGY = "technology";
-            final String ID = "id";
-            final String URL_PICTURE = "picture";
-            final String TITLE = "title";
-            final String INFO = "info";
-            try {
-                JSONObject jsonData = new JSONObject(getMData());
-                JSONObject a = jsonData.getJSONObject(TECHNOLOGY);
-                for (int i = 0; i < a.names().length(); i++) {
-                    JSONObject jsonObject = a.getJSONObject(a.names().get(i).toString());
-                    String id = jsonObject.getString(ID);
-                    String url = jsonObject.getString(URL_PICTURE);
-                    String title = jsonObject.getString(TITLE);
-                    String info = jsonObject.optString(INFO);
-                    TechnologyData.Technology technology = new TechnologyData.Technology(id, url, title, info);
-                    this.mObjects.add(technology);
-                }
-            } catch (JSONException json) {
-                json.printStackTrace();
-                Log.e(LOG_TAG, "Error processing Json data");
-            }
-        }
-
-        public class DownloadJsonData extends DownloadRawData {
-            @Override
-            protected void onPostExecute(String webData) {
-                super.onPostExecute(webData);
-                processResult();
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                String[] par = {mDestinationUri.toString()};
-                return super.doInBackground(par);
-            }
-        }
-    }
-
-    public class ProcessDataObjects extends GetJsonData {
-        public ProcessDataObjects() {
-            super();
-        }
-
-        @Override
-        public void execute() {
-            ProcessData processData = new ProcessData();
-            processData.execute();
-
-        }
-
-        public class ProcessData extends GetJsonData.DownloadJsonData {
-            @Override
-            protected void onPostExecute(String webData) {
-                super.onPostExecute(webData);
-                list = getMObjects();
-                TechnologyData.createInstance(list);
-                MyAdapter wa = new MyAdapter(
-                        getActivity(),
-                        R.layout.technology_list_item,
-                        //getMObjects()
-                        TechnologyData.instance().getImages()
-                );
-
-
-                RecyclerView mRecyclerView = (RecyclerView) activity.findViewById(R.id.recycler_view);
-                mRecyclerView.setHasFixedSize(true);
-                mRecyclerView.setAdapter(wa);
-            }
         }
     }
 }
