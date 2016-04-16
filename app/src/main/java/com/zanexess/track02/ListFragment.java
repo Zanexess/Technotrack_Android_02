@@ -87,15 +87,6 @@ public class ListFragment extends Fragment {
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-//        MyAdapter wa = new MyAdapter(
-//                getActivity(),
-//                R.layout.technology_list_item,
-//                TechnologyData.instance().getImages()
-//        );
-//        mRecyclerView.setAdapter(wa);
-        ProcessDataObjects processDataObjects = new ProcessDataObjects();
-        processDataObjects.execute();
         return root;
     }
 
@@ -225,7 +216,6 @@ public class ListFragment extends Fragment {
                 //params.width = LinearLayout.LayoutParams.WRAP_CONTENT;
                 params.gravity = Gravity.CENTER_HORIZONTAL;
                 iv.setLayoutParams(params);
-
             }
         }
     }
@@ -234,7 +224,7 @@ public class ListFragment extends Fragment {
         private final WeakReference<LoadImageTask> _loadTaskWeak;
 
         private DownloadDrawable(LoadImageTask loadTask) {
-            super(Color.YELLOW);
+            super(Color.GRAY);
             _loadTaskWeak = new WeakReference<>(loadTask);
         }
 
@@ -384,6 +374,8 @@ public class ListFragment extends Fragment {
                 } else {
                     mDownloadStatus = DownloadStatus.OK;
                 }
+
+                getActivity().finish();
             }
 
             @Override

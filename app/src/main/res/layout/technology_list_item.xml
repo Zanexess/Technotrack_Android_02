@@ -5,12 +5,12 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_view"
     android:layout_marginLeft="5dp"
-    android:layout_marginTop="15dp"
+    android:layout_marginTop="5dp"
     android:layout_marginRight="5dp"
-    android:layout_marginBottom="15dp"
+    android:layout_marginBottom="5dp"
     android:layout_gravity="center"
-    card_view:cardElevation="20dp"
-    card_view:cardCornerRadius="10dp"
+    card_view:cardElevation="6dp"
+    card_view:cardCornerRadius="5dp"
     card_view:cardBackgroundColor="#ffffff"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -53,7 +53,8 @@
                 android:text="test_word"
                 style="@android:style/TextAppearance.Medium"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:paddingRight="5dp" />
         </LinearLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>

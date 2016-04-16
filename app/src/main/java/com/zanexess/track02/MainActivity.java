@@ -15,7 +15,6 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         _listFragment = new ListFragment();
-
     }
 
     @Override
