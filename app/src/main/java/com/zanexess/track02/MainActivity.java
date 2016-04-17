@@ -23,7 +23,7 @@ public class MainActivity extends FragmentActivity {
         Fragment frag = getSupportFragmentManager().findFragmentById(R.id.main_fragment);
         if (frag == null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.add(R.id.main_fragment, _listFragment);
+            ft.add(R.id.main_fragment, _listFragment, "_listFragment");
             ft.commit();
         }
     }
@@ -32,4 +32,5 @@ public class MainActivity extends FragmentActivity {
     protected void onStop() {
         super.onStop();
     }
+
 }

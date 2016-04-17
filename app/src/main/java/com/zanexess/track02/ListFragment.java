@@ -3,6 +3,7 @@ package com.zanexess.track02;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -38,6 +39,7 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
     private static int _imageSize;
+    RecyclerView.LayoutManager mLayoutManager;
     private LruCache<String, Bitmap> _memoryCache;
     Activity activity;
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
@@ -45,12 +47,15 @@ public class ListFragment extends Fragment {
     private static int updateImageSize(DisplayMetrics dm) {
         int h = dm.heightPixels;
         int w = dm.widthPixels;
+
         if (w > h) {
             int tmp = w;
             w = h;
             h = tmp;
         }
         return (int)(Math.min(h * 0.3f, w * 0.3f) + 0.5f);
+        //64dp
+        //return (int)(64*dm.scaledDensity);
     }
 
     @Override
@@ -75,7 +80,7 @@ public class ListFragment extends Fragment {
         RecyclerView mRecyclerView = (RecyclerView) root.findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
 
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         MyAdapter wa = new MyAdapter(
@@ -270,6 +275,8 @@ public class ListFragment extends Fragment {
         return null;
     }
 
+
+
     private class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         Context _context;
@@ -300,7 +307,7 @@ public class ListFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, final int position) {
 //            TechnologyData.Technology technology = list.get(position);
             TechnologyData.Technology technology = TechnologyData.instance().getImage(position);
             if (technology == null) return;
@@ -311,7 +318,10 @@ public class ListFragment extends Fragment {
             holder._card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //((ScrollingActivity)getActivity()).doSomething(i);
+//                    ((MainActivity)getActivity()).changeFragment(position);
+                    Intent intent = new Intent(getActivity(), ScreenSlidePagerActivity.class);
+                    intent.putExtra("Int", position);
+                    startActivityForResult(intent, 90);
                 }
             });
             ListFragment.this.loadBitmap(getActivity(), DOMEN + technology.getUrl_picture(), holder._iv);
@@ -320,6 +330,17 @@ public class ListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return _data.size();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case 90:
+                Bundle res = data.getExtras();
+                Integer result = res.getInt("param_result");
+                mLayoutManager.scrollToPosition(result);
+                break;
         }
     }
 }
