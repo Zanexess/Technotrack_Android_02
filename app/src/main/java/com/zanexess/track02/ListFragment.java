@@ -39,10 +39,11 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
     private static int _imageSize;
-    RecyclerView.LayoutManager mLayoutManager;
-    private LruCache<String, Bitmap> _memoryCache;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private static LruCache<String, Bitmap> _memoryCache;
     Activity activity;
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
+
 
     private static int updateImageSize(DisplayMetrics dm) {
         int h = dm.heightPixels;
@@ -116,7 +117,7 @@ public class ListFragment extends Fragment {
         _memoryCache.put(key, bitmap);
     }
 
-    public Bitmap getBitmapFromMemCache(String key) {
+    public static Bitmap getBitmapFromMemCache(String key) {
         return _memoryCache.get(key);
     }
 
@@ -342,6 +343,8 @@ public class ListFragment extends Fragment {
                 mLayoutManager.scrollToPosition(result);
                 break;
         }
+
+
     }
 }
 

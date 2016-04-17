@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">track02</string>
+    <string name="no_info">No information given</string>
 </resources>
