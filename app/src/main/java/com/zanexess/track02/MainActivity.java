@@ -3,10 +3,10 @@ package com.zanexess.track02;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends AppCompatActivity {
     private ListFragment _listFragment;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -15,6 +15,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         _listFragment = new ListFragment();
+        LRUCache.createInstance();
     }
 
     @Override

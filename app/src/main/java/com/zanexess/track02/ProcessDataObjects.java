@@ -24,7 +24,7 @@ public class ProcessDataObjects extends GetJsonData {
             super.onPostExecute(webData);
             list = getMObjects();
             TechnologyData.createInstance(list);
-
+            // по завершению скачивания файла JSON и создания всех объектов открываем активити со списком
             Intent intent = new Intent(activity, MainActivity.class);
             activity.finish();
             activity.startActivity(intent);

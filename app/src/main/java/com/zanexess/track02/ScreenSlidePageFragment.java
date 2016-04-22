@@ -1,16 +1,16 @@
 package com.zanexess.track02;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class ScreenSlidePageFragment extends Fragment {
-    final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
+    private static int _imageSize;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -25,13 +25,21 @@ public class ScreenSlidePageFragment extends Fragment {
         Bundle bundle = getArguments();
         Integer position = bundle.getInt("QQQ");
 
-        String url = DOMEN + TechnologyData.instance().getImage(position).getUrl_picture();
-        Bitmap bm = ListFragment.getBitmapFromMemCache(url);
-        imageView.setImageBitmap(bm);
+        // Высчитываем оптимальные для текущего экрана размеры
+        _imageSize = getResources().getDisplayMetrics().widthPixels;
 
-        title.setText(TechnologyData.instance().getImage(position).getTitle());
-        if (!TechnologyData.instance().getImage(position).getInfo().equals("")) {
-            info.setText(TechnologyData.instance().getImage(position).getInfo());
+        //Для того, чтобы не прыгало изображение, когда подгрузится
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(_imageSize, _imageSize);
+        imageView.setLayoutParams(lp);
+
+        TechnologyData.Technology technology = TechnologyData.instance().getImage(position);
+
+        //Загрузка без потери качества
+        LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, false);
+
+        title.setText(technology.getTitle());
+        if (!technology.getInfo().equals("")) {
+            info.setText(technology.getInfo());
         }
 
         return rootView;

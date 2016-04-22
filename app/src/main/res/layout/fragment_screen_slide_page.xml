@@ -17,13 +17,14 @@
 
         <TextView style="?android:textAppearanceMedium"
             android:id="@+id/title"
-            android:padding="16dp"
+            android:paddingTop="16dp"
+            android:textStyle="bold"
             android:lineSpacingMultiplier="1.2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center" />
 
-        <TextView style="?android:textAppearanceMedium"
+        <TextView style="?android:textAppearanceSmall"
             android:id="@+id/info"
             android:padding="16dp"
             android:lineSpacingMultiplier="1.2"

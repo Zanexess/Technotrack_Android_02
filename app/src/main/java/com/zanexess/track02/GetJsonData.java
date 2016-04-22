@@ -12,6 +12,7 @@ import java.util.List;
 
 public class GetJsonData extends GetRawData {
     final static String URL = "http://mobevo.ext.terrhq.ru/shr/j/ru/technology.js";
+    final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
     private String LOG_TAG = GetJsonData.class.getSimpleName();
     private List<TechnologyData.Technology> mObjects;
     private Uri mDestinationUri;
@@ -38,6 +39,8 @@ public class GetJsonData extends GetRawData {
         return mDestinationUri != null;
     }
 
+    // Парсинг файла JSON с использованием стандартных средств и создание объектов
+    // под каждую технологию
     public void processResult() {
         if (getMDownloadStatus() != DownloadStatus.OK) {
             Log.e(LOG_TAG, "Error downloading raw file");
@@ -54,7 +57,7 @@ public class GetJsonData extends GetRawData {
             for (int i = 0; i < a.names().length(); i++) {
                 JSONObject jsonObject = a.getJSONObject(a.names().get(i).toString());
                 String id = jsonObject.getString(ID);
-                String url = jsonObject.getString(URL_PICTURE);
+                String url = DOMEN + jsonObject.getString(URL_PICTURE);
                 String title = jsonObject.getString(TITLE);
                 String info = jsonObject.optString(INFO);
                 TechnologyData.Technology technology = new TechnologyData.Technology(id, url, title, info);

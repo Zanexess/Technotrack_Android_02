@@ -3,14 +3,15 @@ package com.zanexess.track02;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
+import android.view.ViewGroup;
 
-public class ScreenSlidePagerActivity extends FragmentActivity {
+public class ScreenSlidePagerActivity extends AppCompatActivity {
     private ViewPager mPager;
 
     /**
@@ -26,15 +27,27 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.setCurrentItem(getIntent().getExtras().getInt("Int"));
+        mPager.setPageTransformer(true, new ZoomOutPageTransformer());
     }
 
     //Возвращение на позицию где закончили. Будет внизу
     @Override
     public void onBackPressed() {
-        Log.v("afsd", "" + mPager.getCurrentItem());
         finishWithResult();
     }
 
+    // Переопределение кнопки назад в ActionBar
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finishWithResult();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    // Завершить активити, вернув результат
     private void finishWithResult()
     {
         Bundle conData = new Bundle();
@@ -57,6 +70,14 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
             bundle.putInt("QQQ", position);
             screenSlidePageFragment.setArguments(bundle);
             return screenSlidePageFragment;
+        }
+        @Override
+        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+            if (getSupportActionBar() != null) {
+                //Заголовок
+                getSupportActionBar().setTitle(TechnologyData.instance().getImage(position).getTitle());
+            }
+            super.setPrimaryItem(container, position, object);
         }
 
         @Override

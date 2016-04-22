@@ -1,24 +1,12 @@
 package com.zanexess.track02;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.LruCache;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,57 +14,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.util.List;
 
 
 public class ListFragment extends Fragment {
     private static int _imageSize;
     private RecyclerView.LayoutManager mLayoutManager;
-    private static LruCache<String, Bitmap> _memoryCache;
-    Activity activity;
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
-
-
-    private static int updateImageSize(DisplayMetrics dm) {
-        int h = dm.heightPixels;
-        int w = dm.widthPixels;
-
-        if (w > h) {
-            int tmp = w;
-            w = h;
-            h = tmp;
-        }
-        return (int)(Math.min(h * 0.3f, w * 0.3f) + 0.5f);
-        //64dp
-        //return (int)(64*dm.scaledDensity);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        activity = getActivity();
         View root = inflater.inflate(R.layout.technology_list, container, false);
         if (null == root) return null;
-        // Инициализация кэша
-        if (_memoryCache == null) {
-            final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-            final int cacheSize = maxMemory / 8;
-            _memoryCache = new LruCache<String, Bitmap>(cacheSize) {
-                @Override
-                protected int sizeOf(String key, Bitmap bitmap) {
-                    return bitmap.getRowBytes() * bitmap.getHeight() / 1024;
-                }
-            };
-        }
+
         // Высчитываем оптимальные для текущего экрана размеры
-        _imageSize = updateImageSize(getResources().getDisplayMetrics());
+        _imageSize = LoadImageTask.updateImageSize(getResources().getDisplayMetrics());
 
         RecyclerView mRecyclerView = (RecyclerView) root.findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -87,38 +39,10 @@ public class ListFragment extends Fragment {
         MyAdapter wa = new MyAdapter(
                 getActivity(),
                 R.layout.technology_list_item,
-                //getMObjects()
                 TechnologyData.instance().getImages()
         );
         mRecyclerView.setAdapter(wa);
         return root;
-    }
-
-    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
-
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-        _memoryCache.put(key, bitmap);
-    }
-
-    public static Bitmap getBitmapFromMemCache(String key) {
-        return _memoryCache.get(key);
     }
 
     private static class ViewHolder extends RecyclerView.ViewHolder {
@@ -134,156 +58,11 @@ public class ListFragment extends Fragment {
         }
     }
 
-    private class LoadImageTask extends AsyncTask<Void, Void, Bitmap> {
-        private final WeakReference<ImageView> _weakIv;
-        private final WeakReference<Context> _context;
-        private final String _name;
-
-        public LoadImageTask(Context context, ImageView iv, String name) {
-            super();
-            _weakIv = new WeakReference<>(iv);
-            _context = new WeakReference<>(context);
-            _name = name;
-        }
-
-        protected Bitmap decodeFile(File file) {
-            try {
-                InputStream is = new FileInputStream(file);
-                BitmapFactory.Options opt = new BitmapFactory.Options();
-                opt.inJustDecodeBounds = true;
-                BitmapFactory.decodeStream(is, null, opt);
-                int sc = calculateInSampleSize(opt, _imageSize, _imageSize);
-                opt.inSampleSize = sc;
-                opt.inJustDecodeBounds = false;
-                Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(file), null, opt);
-
-//                FIX
-                if (bitmap == null) {
-                    return null;
-                }
-
-                Log.d("LOAD_IMAGE", " name = " + _name + " w = " + bitmap.getWidth() + " h = " + bitmap.getHeight());
-                return bitmap;
-            } catch (IOException e) {
-                //Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
-            }
-            return null;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            try {
-                Context context = _context.get();
-                Bitmap bitmap;
-                File file;
-                if (context != null) {
-                    file = new File(context.getCacheDir(), _name.replace("/", ""));
-//                    //FIX
-//                    if (file == null) return null;
-                    bitmap = decodeFile(file);
-                    if (null == bitmap ) {
-                        URL url = new URL(_name);
-                        InputStream is = url.openConnection().getInputStream();
-                        OutputStream os = new FileOutputStream(file);
-                        Utils.CopyStream(is, os);
-                        os.close();
-                        bitmap = decodeFile(file);
-                    }
-                    return bitmap;
-                }
-            } catch (IOException e) {
-                //Log.e("LoadImageTask", "LoadImageTask.LoadBitmap IOException " + e.getMessage(), e);
-            }
-            return null;
-        }
-
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (isCancelled())
-                bitmap = null;
-
-            Bitmap bm = ListFragment.this.getBitmapFromMemCache(_name);
-            if (bm == null && bitmap != null) {
-                ListFragment.this.addBitmapToMemoryCache(_name, bitmap);
-                bm = bitmap;
-            }
-            ImageView iv = _weakIv.get();
-            if (iv != null && this == getBitmapDownloaderTask(iv)) {
-
-                iv.setImageBitmap(bm);
-                // Now change ImageView's dimensions to match the scaled image
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) iv.getLayoutParams();
-                params.width = _imageSize;
-                params.height = _imageSize;
-                //params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                //params.width = LinearLayout.LayoutParams.WRAP_CONTENT;
-                params.gravity = Gravity.CENTER_HORIZONTAL;
-                iv.setLayoutParams(params);
-            }
-        }
-    }
-
-    private static class DownloadDrawable extends ColorDrawable {
-        private final WeakReference<LoadImageTask> _loadTaskWeak;
-
-        private DownloadDrawable(LoadImageTask loadTask) {
-            super(Color.GRAY);
-            _loadTaskWeak = new WeakReference<>(loadTask);
-        }
-
-        public LoadImageTask getTask() {
-            return _loadTaskWeak.get();
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void loadBitmap(Context context, String name, ImageView iv) {
-        final Bitmap bm = getBitmapFromMemCache(name);
-        if (null != bm) {
-            cancelDownload(name, iv);
-            iv.setImageBitmap(bm);
-        } else {
-            LoadImageTask lt = new LoadImageTask(context, iv, name);
-            DownloadDrawable dd = new DownloadDrawable(lt);
-            iv.setImageDrawable(dd);
-
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                lt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            else
-                lt.execute();
-        }
-    }
-
-    private static void cancelDownload(String key, ImageView imageView) {
-        LoadImageTask task = getBitmapDownloaderTask(imageView);
-        if (null != task) {
-            String bitKey = task._name;
-            if ((bitKey == null) || (!bitKey.equals(key))) {
-                task.cancel(true);
-            }
-        }
-    }
-
-    private static LoadImageTask getBitmapDownloaderTask(ImageView imageView) {
-        if (imageView != null) {
-            Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof DownloadDrawable) {
-                DownloadDrawable dd = (DownloadDrawable)drawable;
-                return dd.getTask();
-            }
-        }
-        return null;
-    }
-
-
-
     private class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         Context _context;
         int _resource;
         List<TechnologyData.Technology> _data;
-
 
         public MyAdapter(Context context, int resource, List<TechnologyData.Technology> objects) {
             _context = context;
@@ -325,7 +104,7 @@ public class ListFragment extends Fragment {
                     startActivityForResult(intent, 90);
                 }
             });
-            ListFragment.this.loadBitmap(getActivity(), DOMEN + technology.getUrl_picture(), holder._iv);
+            LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
         }
 
         @Override
@@ -343,7 +122,6 @@ public class ListFragment extends Fragment {
                 mLayoutManager.scrollToPosition(result);
                 break;
         }
-
 
     }
 }

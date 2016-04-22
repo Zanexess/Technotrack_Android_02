@@ -20,7 +20,6 @@ public class SplashActivity extends Activity {
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             View decorView = getWindow().getDecorView();
-            // Hide the status bar.
             int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
             decorView.setSystemUiVisibility(uiOptions);
         }
@@ -32,15 +31,12 @@ public class SplashActivity extends Activity {
         } else {
             finishActivity();
         }
-        //finishActivity();
     }
 
     private boolean chechConnection() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-//            Toast connectedToast = Toast.makeText(getApplicationContext(), "Network connected!", Toast.LENGTH_LONG);
-//            connectedToast.show();
             return true;
         } else {
             Toast disconnectedToast = Toast.makeText(getApplicationContext(), "No network connection! Application will be terminated in 5 sec.", Toast.LENGTH_LONG);
