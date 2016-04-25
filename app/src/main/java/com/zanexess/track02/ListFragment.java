@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -104,7 +105,11 @@ public class ListFragment extends Fragment {
                     startActivityForResult(intent, 90);
                 }
             });
-            LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
+            if (NetworkManager.isNetworkAvailable(getContext())) {
+                LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
+            } else {
+                Toast.makeText(getContext(), "Нет интернет соединения", Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override

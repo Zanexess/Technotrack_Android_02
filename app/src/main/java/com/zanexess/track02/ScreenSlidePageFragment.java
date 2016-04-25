@@ -1,5 +1,7 @@
 package com.zanexess.track02;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -8,10 +10,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ScreenSlidePageFragment extends Fragment {
     private static int _imageSize;
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -25,7 +29,6 @@ public class ScreenSlidePageFragment extends Fragment {
         Bundle bundle = getArguments();
         Integer position = bundle.getInt("QQQ");
 
-        // Высчитываем оптимальные для текущего экрана размеры
         _imageSize = getResources().getDisplayMetrics().widthPixels;
 
         //Для того, чтобы не прыгало изображение, когда подгрузится
@@ -35,7 +38,13 @@ public class ScreenSlidePageFragment extends Fragment {
         TechnologyData.Technology technology = TechnologyData.instance().getImage(position);
 
         //Загрузка без потери качества
-        LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, false);
+        if (NetworkManager.isNetworkAvailable(getContext())) {
+            LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, false);
+        } else {
+            //Пробуем грузить в плохом разрешении из кэша
+            //LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, true);
+            Toast.makeText(getContext(), "Нет интернет соединения для загрузки в большом разрешении", Toast.LENGTH_SHORT).show();
+        }
 
         title.setText(technology.getTitle());
         if (!technology.getInfo().equals("")) {

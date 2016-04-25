@@ -1,9 +1,6 @@
 package com.zanexess.track02;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -24,24 +21,12 @@ public class SplashActivity extends Activity {
             decorView.setSystemUiVisibility(uiOptions);
         }
         setContentView(R.layout.splash_activity);
-        if (chechConnection()) {
-            //TODO Splash
+        if (NetworkManager.isNetworkAvailable(getApplicationContext())) {
             ProcessDataObjects processData = new ProcessDataObjects(SplashActivity.this);
             processData.execute();
         } else {
+            Toast.makeText(getApplicationContext(), "Нет интернет соединения. Приложение закроется через 5 секунд", Toast.LENGTH_SHORT).show();
             finishActivity();
-        }
-    }
-
-    private boolean chechConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            return true;
-        } else {
-            Toast disconnectedToast = Toast.makeText(getApplicationContext(), "No network connection! Application will be terminated in 5 sec.", Toast.LENGTH_LONG);
-            disconnectedToast.show();
-            return false;
         }
     }
 

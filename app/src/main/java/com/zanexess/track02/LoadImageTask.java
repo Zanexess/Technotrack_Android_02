@@ -96,12 +96,14 @@ public class LoadImageTask extends AsyncTask<Void, Void, Bitmap> {
                 file = new File(context.getCacheDir(), _name.replace("/", ""));
                 bitmap = decodeFile(file);
                 if (null == bitmap ) {
-                    URL url = new URL(_name);
-                    InputStream is = url.openConnection().getInputStream();
-                    OutputStream os = new FileOutputStream(file);
-                    Utils.CopyStream(is, os);
-                    os.close();
-                    bitmap = decodeFile(file);
+                    if (NetworkManager.isNetworkAvailable(_context.get())) {
+                        URL url = new URL(_name);
+                        InputStream is = url.openConnection().getInputStream();
+                        OutputStream os = new FileOutputStream(file);
+                        Utils.CopyStream(is, os);
+                        os.close();
+                        bitmap = decodeFile(file);
+                    }
                 }
                 return bitmap;
             }
@@ -133,7 +135,6 @@ public class LoadImageTask extends AsyncTask<Void, Void, Bitmap> {
             }
             params.gravity = Gravity.CENTER_HORIZONTAL;
             iv.setLayoutParams(params);
-
         }
     }
 

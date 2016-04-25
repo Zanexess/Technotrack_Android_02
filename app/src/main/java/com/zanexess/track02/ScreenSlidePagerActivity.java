@@ -85,6 +85,4 @@ public class ScreenSlidePagerActivity extends AppCompatActivity {
             return TechnologyData.instance().getImages().size();
         }
     }
-
-
 }
