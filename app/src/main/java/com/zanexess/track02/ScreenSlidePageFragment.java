@@ -41,11 +41,11 @@ public class ScreenSlidePageFragment extends Fragment {
         //Загрузка без потери качества
         if (NetworkManager.isNetworkAvailable(getContext())) {
             LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, false);
-        } else {
+        } else if (imageView.getDrawable() == null) {
             //Пробуем грузить в плохом разрешении из кэша
-            //LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, true);
+            LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, true);
             if (!state) {
-                Toast.makeText(getContext(), "Нет интернет соединения для загрузки в большом разрешении", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Нет интернет соединения для загрузки в большом разрешении. Возможно отображение в плохом качестве.", Toast.LENGTH_SHORT).show();
                 state = true;
                 Thread timer = new Thread() {
                     public void run() {
@@ -64,7 +64,6 @@ public class ScreenSlidePageFragment extends Fragment {
                 timer.start();
             }
         }
-
         title.setText(technology.getTitle());
         if (!technology.getInfo().equals("")) {
             info.setText(technology.getInfo());
