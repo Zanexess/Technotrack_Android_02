@@ -18,6 +18,7 @@ public class GetRawData {
     private String mData;
     private DownloadStatus mDownloadStatus;
 
+
     public GetRawData(String mRawUrl) {
         this.mRawUrl = mRawUrl;
         this.mDownloadStatus = DownloadStatus.IDLE;
@@ -27,6 +28,10 @@ public class GetRawData {
         this.mDownloadStatus = DownloadStatus.IDLE;
         this.mRawUrl = null;
         this.mData = null;
+    }
+
+    protected void setMData(String mData) {
+        this.mData = mData;
     }
 
     public String getMData() {

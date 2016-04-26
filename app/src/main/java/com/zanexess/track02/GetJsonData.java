@@ -42,10 +42,7 @@ public class GetJsonData extends GetRawData {
     // Парсинг файла JSON с использованием стандартных средств и создание объектов
     // под каждую технологию
     public void processResult() {
-        if (getMDownloadStatus() != DownloadStatus.OK) {
-            Log.e(LOG_TAG, "Error downloading raw file");
-            return;
-        }
+
         final String TECHNOLOGY = "technology";
         final String ID = "id";
         final String URL_PICTURE = "picture";

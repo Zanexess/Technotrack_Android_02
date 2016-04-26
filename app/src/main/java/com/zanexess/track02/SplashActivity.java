@@ -1,13 +1,17 @@
 package com.zanexess.track02;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 public class SplashActivity extends Activity {
+
+    private SharedPreferences sPref;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -21,12 +25,24 @@ public class SplashActivity extends Activity {
             decorView.setSystemUiVisibility(uiOptions);
         }
         setContentView(R.layout.splash_activity);
+
         if (NetworkManager.isNetworkAvailable(getApplicationContext())) {
             ProcessDataObjects processData = new ProcessDataObjects(SplashActivity.this);
             processData.execute();
+            String str = processData.getResult();
+            if (str != null) {
+                Log.v("Получен результат", str.length()+"");
+                saveText(str);
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Нет интернет соединения. Приложение закроется через 5 секунд", Toast.LENGTH_SHORT).show();
-            finishActivity();
+            String str = loadText();
+            if (str == null) {
+                Toast.makeText(getApplicationContext(), "Нет интернет соединения. Приложение закроется через 5 секунд", Toast.LENGTH_SHORT).show();
+                finishActivity();
+            } else {
+                ProcessDataObjects processData = new ProcessDataObjects(SplashActivity.this);
+                processData.executeFromExistedResult(str);
+            }
         }
     }
 
@@ -35,7 +51,7 @@ public class SplashActivity extends Activity {
             public void run() {
                 try {
                     int logoTimer = 0;
-                    while (logoTimer < 5000) {
+                    while (logoTimer < 2000) {
                         sleep(100);
                         logoTimer = logoTimer + 100;
                     }
@@ -44,9 +60,21 @@ public class SplashActivity extends Activity {
                 } finally {
                     finish();
                 }
-                System.exit(1);
             }
         };
         timer.start();
+    }
+
+    private void saveText(String text) {
+        sPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putString("SAVED_TEXT", text);
+        ed.commit();
+    }
+
+    private String loadText() {
+        sPref = getPreferences(MODE_PRIVATE);
+        String savedText = sPref.getString("SAVED_TEXT", "");
+        return savedText;
     }
 }
