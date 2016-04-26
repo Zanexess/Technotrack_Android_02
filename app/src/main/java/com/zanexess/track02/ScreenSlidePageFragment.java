@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 public class ScreenSlidePageFragment extends Fragment {
     private static int _imageSize;
+    private static volatile boolean state = false;
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
@@ -43,7 +44,25 @@ public class ScreenSlidePageFragment extends Fragment {
         } else {
             //Пробуем грузить в плохом разрешении из кэша
             //LoadImageTask.loadBitmap(getContext(), technology.getUrl_picture(), imageView, ScreenSlidePageFragment.this, true);
-            Toast.makeText(getContext(), "Нет интернет соединения для загрузки в большом разрешении", Toast.LENGTH_SHORT).show();
+            if (!state) {
+                Toast.makeText(getContext(), "Нет интернет соединения для загрузки в большом разрешении", Toast.LENGTH_SHORT).show();
+                state = true;
+                Thread timer = new Thread() {
+                    public void run() {
+                        try {
+                            int logoTimer = 0;
+                            while (logoTimer < 2100) {
+                                sleep(100);
+                                logoTimer = logoTimer + 100;
+                            }
+                            state = false;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                timer.start();
+            }
         }
 
         title.setText(technology.getTitle());

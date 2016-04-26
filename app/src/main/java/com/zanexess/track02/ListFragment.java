@@ -20,6 +20,7 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
     private static int _imageSize;
+    private static volatile boolean state = false;
     private RecyclerView.LayoutManager mLayoutManager;
     final static String DOMEN = "http://mobevo.ext.terrhq.ru/";
 
@@ -108,7 +109,26 @@ public class ListFragment extends Fragment {
             if (NetworkManager.isNetworkAvailable(getContext())) {
                 LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
             } else {
-                Toast.makeText(getContext(), "Нет интернет соединения", Toast.LENGTH_SHORT).show();
+                if (!state) {
+                    Toast.makeText(getContext(), "Нет интернет соединения", Toast.LENGTH_SHORT).show();
+                    state = true;
+                    Thread timer = new Thread() {
+                        public void run() {
+                            try {
+                                int logoTimer = 0;
+                                while (logoTimer < 2100) {
+                                    sleep(100);
+                                    logoTimer = logoTimer + 100;
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } finally {
+                                state = false;
+                            }
+                        }
+                    };
+                    timer.start();
+                }
             }
         }
 
