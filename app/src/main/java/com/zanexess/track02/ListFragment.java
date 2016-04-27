@@ -108,7 +108,7 @@ public class ListFragment extends Fragment {
             });
             if (NetworkManager.isNetworkAvailable(getContext())) {
                 LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
-            } else {
+            } else if (holder._iv.getDrawable() == null) {
                 LoadImageTask.loadBitmap(getActivity(), technology.getUrl_picture(), holder._iv, ListFragment.this, true);
                 if (!state) {
                     Toast.makeText(getContext(), "Нет интернет соединения. Возможно некорректное отображение", Toast.LENGTH_SHORT).show();
